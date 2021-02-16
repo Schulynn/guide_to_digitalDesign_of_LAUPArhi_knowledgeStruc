@@ -1180,12 +1180,12 @@ def imgs_layoutShow_FPList(imgs_fp_list,columns,scale,figsize=(15,10)):
 
     
 #将每批次样本X的形状转换为(batch_size,-1)
-from torch import nn
-class flattenLayer(nn.Module):
-    def __init__(self):
-        super(flattenLayer,self).__init__()
-    def forward(self,x):
-        return x.view(x.shape[0],-1)
+#from torch import nn
+# class flattenLayer(nn.Module):
+#     def __init__(self):
+#         super(flattenLayer,self).__init__()
+#     def forward(self,x):
+#         return x.view(x.shape[0],-1)
 
 def evaluate_accuracy(data_iter, net):
     '''
