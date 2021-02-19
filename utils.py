@@ -47,9 +47,12 @@ def baiduPOI_dataCrawler(query_dic,bound_coordinate,partition,page_num_range,poi
                     results=responseOfLoad.get("results") 
                     for row in range(len(results)):
                         subData=results[row]
-                        baidu_coordinateSystem=[subData.get('location').get('lng'),subData.get('location').get('lat')] #获取百度坐标系
-                        Mars_coordinateSystem=cc.bd09togcj02(baidu_coordinateSystem[0], baidu_coordinateSystem[1]) #百度坐标系-->火星坐标系
-                        WGS84_coordinateSystem=cc.gcj02towgs84(Mars_coordinateSystem[0],Mars_coordinateSystem[1]) #火星坐标系-->WGS84
+                        try:
+                            baidu_coordinateSystem=[subData.get('location').get('lng'),subData.get('location').get('lat')] #获取百度坐标系
+                            Mars_coordinateSystem=cc.bd09togcj02(baidu_coordinateSystem[0], baidu_coordinateSystem[1]) #百度坐标系-->火星坐标系
+                            WGS84_coordinateSystem=cc.gcj02towgs84(Mars_coordinateSystem[0],Mars_coordinateSystem[1]) #火星坐标系-->WGS84
+                        except:
+                            print("Ignore the Nonetype data!")
                         
                         #更新坐标
                         subData['location']['lat']=WGS84_coordinateSystem[1]
