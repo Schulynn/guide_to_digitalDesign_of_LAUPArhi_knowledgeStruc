@@ -419,10 +419,10 @@ if __name__=="__main__":
     # buildingFootprint.plot(column='Floor',cmap='terrain')
     # gpd2postSQL(buildingFootprint,table_name='building_footprint',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
-    #d-03_bus routes
-    # bus_routes=shp2gdf(data_dic['bus_routes'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
-    # bus_routes.plot()
-    # gpd2postSQL(bus_routes,table_name='bus_routes',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    # d-03_bus routes
+    bus_routes=shp2gdf(data_dic['bus_routes'],epsg=nanjing_epsg,boundary=None,encoding='GBK')
+    bus_routes.plot()
+    gpd2postSQL(bus_routes,table_name='bus_routes',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-04_bus station
     # bus_stations=shp2gdf(data_dic['bus_stations'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
@@ -483,12 +483,12 @@ if __name__=="__main__":
     # bike_sharing.plot()
     
     #h-12_sentinel-2-NDVI
-    ndvi_fn=r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\NDVI.tif'
-    sentinel_2_NDVI=sentinel_2_NDVI(data_dic['sentinel_2'],ndvi_fn)
-    #i-12-01_raster crop
-    ndvi_cropped=raster_crop(raster_fn=ndvi_fn,crop_shp_fn='./data/GIS/b_centroid_buffer.shp',boundary=boudnary_polygon) #,cropped_fn='./data/GIS/NDVI_cropped.tif'
-    ndvi_cropped.plot(column='raster_val',cmap='terrain',markersize=1)
-    gpd2postSQL(ndvi_cropped,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    # ndvi_fn=r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\NDVI.tif'
+    # sentinel_2_NDVI=sentinel_2_NDVI(data_dic['sentinel_2'],ndvi_fn)
+    # #i-12-01_raster crop
+    # ndvi_cropped=raster_crop(raster_fn=ndvi_fn,crop_shp_fn='./data/GIS/b_centroid_buffer.shp',boundary=boudnary_polygon) #,cropped_fn='./data/GIS/NDVI_cropped.tif'
+    # ndvi_cropped.plot(column='raster_val',cmap='terrain',markersize=1)
+    # gpd2postSQL(ndvi_cropped,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
        
     
     #I-write GeoDataFrame into SQLite database
