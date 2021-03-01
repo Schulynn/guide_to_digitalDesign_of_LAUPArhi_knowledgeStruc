@@ -1276,3 +1276,12 @@ def KITTI_info(KITTI_info_fp,timestamps_fp):
     drive_info=pd.concat([drive_info,timestamps],axis=1,sort=False)
     #drive_29_0071_info.index=pd.to_datetime(drive_29_0071_info["timestamps_"]) #用时间戳作为行(row)索引
     return drive_info            
+
+def postSQL2gpd(table_name,geom_col='geometry',**kwargs):
+    from sqlalchemy import create_engine
+    import geopandas as gpd
+    engine=create_engine("postgres://{myusername}:{mypassword}@localhost:5432/{mydatabase}".format(myusername=kwargs['myusername'],mypassword=kwargs['mypassword'],mydatabase=kwargs['mydatabase']))  
+    gdf=gpd.read_postgis(table_name, con=engine,geom_col=geom_col)
+    print("_"*50)
+    print('The data has been read from PostSQL database...')    
+    return gdf

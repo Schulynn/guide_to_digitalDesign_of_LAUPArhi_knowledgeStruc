@@ -412,40 +412,68 @@ if __name__=="__main__":
     #c-road_network_kml
     # road_gdf=kml2gdf(data_dic['road_network'],epsg=nanjing_epsg,boundary=boudnary_polygon)
     # road_gdf.plot()
+    # gpd2postSQL(road_gdf,table_name='road_network',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-02_building footprint
     # buildingFootprint=shp2gdf(data_dic['building_footprint'],epsg=nanjing_epsg,boundary=boudnary_polygon)
     # buildingFootprint.plot(column='Floor',cmap='terrain')
+    # gpd2postSQL(buildingFootprint,table_name='building_footprint',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-03_bus routes
     # bus_routes=shp2gdf(data_dic['bus_routes'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
     # bus_routes.plot()
+    # gpd2postSQL(bus_routes,table_name='bus_routes',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-04_bus station
     # bus_stations=shp2gdf(data_dic['bus_stations'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
     # bus_stations.plot()
+    # gpd2postSQL(bus_stations,table_name='bus_stations',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-05_subway lines
     # subway_lines=shp2gdf(data_dic['subway_lines'],epsg=nanjing_epsg,encoding='GBK')
     # subway_lines.plot()
+    # gpd2postSQL(subway_lines,table_name='subway_lines',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-06_subway stations
     # subway_stations=shp2gdf(data_dic['subway_stations'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
     # subway_stations.plot()
+    # gpd2postSQL(subway_stations,table_name='subway_stations',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-07_population
     # population=shp2gdf(data_dic['population'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
     # population.plot(column='Population',cmap='hot')
+    # gpd2postSQL(population,table_name='population',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #e-A-08_Nanjing taxi data
     # g_df_dict=csv2gdf_A_taxi(data_dic['taxi'],epsg=nanjing_epsg,boundary=boudnary_polygon)
     # taxi_keys=list(g_df_dict.keys())
     # print(taxi_keys)
     # g_df_dict[taxi_keys[0]].plot(column=taxi_keys[0],cmap='hot')
+    
+    # for key in taxi_keys:
+    #    gpd2postSQL(g_df_dict[key],table_name='taxi_{}'.format(key),myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT') 
 
     #e-B-09_POI
     # POI=csv2gdf_A_POI(data_dic['POI'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
     # POI.plot(column='superclass',cmap='terrain',markersize=1)
+    
+    # POI.rename({'唯一ID':'ID', 
+    #             'POI名称':"Name", 
+    #             'POI类型':"class", 
+    #             'POI类型编号':"class_idx", 
+    #             '行业类型':"industry_class", 
+    #             '地址':"address", 
+    #             '经度':"lon", 
+    #             '纬度':'lat',
+    #             'POI所在省份名称':"province", 
+    #             'POI所在城市名称':"city", 
+    #             '区域编码':"reginal_code", 
+    #             # 'superclass', 
+    #             # 'geometry', 
+    #             # 'mask'
+    #             },axis=1,inplace=True)
+    # #table name should be the low case
+    # gpd2postSQL(POI,table_name='poi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
 
     # f-10_ Metro Weibo(microblog) publish
     # microblog=db2df(data_dic['microblog'],'NajingMetro')
@@ -456,13 +484,12 @@ if __name__=="__main__":
     
     #h-12_sentinel-2-NDVI
     ndvi_fn=r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\NDVI.tif'
-    # sentinel_2_NDVI=sentinel_2_NDVI(data_dic['sentinel_2'],ndvi_fn)
+    sentinel_2_NDVI=sentinel_2_NDVI(data_dic['sentinel_2'],ndvi_fn)
     #i-12-01_raster crop
-    # ndvi_cropped=raster_crop(raster_fn=ndvi_fn,crop_shp_fn='./data/GIS/b_centroid_buffer.shp',boundary=boudnary_polygon) #,cropped_fn='./data/GIS/NDVI_cropped.tif'
-    # ndvi_cropped.plot(column='raster_val',cmap='terrain',markersize=1)
-    
-    
-    
+    ndvi_cropped=raster_crop(raster_fn=ndvi_fn,crop_shp_fn='./data/GIS/b_centroid_buffer.shp',boundary=boudnary_polygon) #,cropped_fn='./data/GIS/NDVI_cropped.tif'
+    ndvi_cropped.plot(column='raster_val',cmap='terrain',markersize=1)
+    gpd2postSQL(ndvi_cropped,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+       
     
     #I-write GeoDataFrame into SQLite database
     # gpd2SQLite(population,db_file,table_name='population')
@@ -474,5 +501,5 @@ if __name__=="__main__":
     # population_postsql.plot(column='Population',cmap='hot')
     
     #H-load raster into postGreSQL
-    raster2postSQL(ndvi_fn,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    # raster2postSQL(ndvi_fn,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
         
