@@ -335,9 +335,72 @@ def raster_crop(raster_fn,crop_shp_fn,boundary=None):
     
     return cropped_img_gpd
 
+def gpd2SQLite(gdf_,db_fp,table_name):
+    from geoalchemy2 import Geometry, WKTElement
+    from sqlalchemy import create_engine
+    import pandas as pd    
+    import copy
+    import shapely.wkb    
+
+    gdf=copy.deepcopy(gdf_)
+    crs=gdf.crs
+    # print(help(crs))
+    # print(crs.to_epsg())
+    # gdf['geom']=gdf['geometry'].apply(lambda g: WKTElement(g.wkt,srid=crs.to_epsg()))
+    #convert all values from the geopandas geometry column into their well-known-binary representations
+    gdf['geom']=gdf.apply(lambda row: shapely.wkb.dumps(row.geometry),axis=1)
+    gdf.drop(columns=['geometry','mask'],inplace=True)
+    # print(type(gdf.geom.iloc[0]))
+    print(gdf)
+    engine=create_engine('sqlite:///'+'\\\\'.join(db_fp.split('\\')),echo=True)
+    gdf.to_sql(table_name, con=engine, if_exists='replace', index=False,) #dtype={'geometry': Geometry('POINT')} ;dtype={'geometry': Geometry('POINT',srid=crs.to_epsg())}
+    print('has been written to into the SQLite database...')
+
+def gpd2postSQL(gdf,table_name,**kwargs):
+    from sqlalchemy import create_engine
+    # engine=create_engine("postgres://postgres:123456@localhost:5432/workshop-LA-UP_IIT")  
+    engine=create_engine("postgres://{myusername}:{mypassword}@localhost:5432/{mydatabase}".format(myusername=kwargs['myusername'],mypassword=kwargs['mypassword'],mydatabase=kwargs['mydatabase']))  
+    gdf.to_postgis(table_name, con=engine, if_exists='replace', index=False,)  
+    print("_"*50)
+    print('has been written to into the PostSQL database...')
+    
+def postSQL2gpd(table_name,geom_col='geometry',**kwargs):
+    from sqlalchemy import create_engine
+    import geopandas as gpd
+    engine=create_engine("postgres://{myusername}:{mypassword}@localhost:5432/{mydatabase}".format(myusername=kwargs['myusername'],mypassword=kwargs['mypassword'],mydatabase=kwargs['mydatabase']))  
+    gdf=gpd.read_postgis(table_name, con=engine,geom_col=geom_col)
+    print("_"*50)
+    print('The data has been read from PostSQL database...')    
+    return gdf
+
+def raster2postSQL(raster_fn,**kwargs):
+    from osgeo import gdal, osr
+    import psycopg2
+    import subprocess
+    from pathlib import Path
+    
+    raster=gdal.Open(raster_fn)
+    # print(raster)
+    proj=osr.SpatialReference(wkt=raster.GetProjection())
+    print(proj)
+    projection=str(proj.GetAttrValue('AUTHORITY',1))
+    gt=raster.GetGeoTransform()
+    pixelSizeX=str(round(gt[1]))
+    pixelSizeY=str(round(-gt[5]))
+    
+    # cmds='raster2pgsql -s '+projection+' -I -C -M "'+raster_fn+'" -F -t '+pixelSizeX+'x'+pixelSizeY+' public.'+'uu'+' | psql -d {mydatabase} -U {myusername} -h localhost -p 5432'.format(mydatabase=kwargs['mydatabase'],myusername=kwargs['myusername'])
+    cmds='raster2pgsql -s '+projection+' -I -M "'+raster_fn+'" -F -t '+pixelSizeX+'x'+pixelSizeY+' public.'+Path(raster_fn).stem+' | psql -d {mydatabase} -U {myusername} -h localhost -p 5432'.format(mydatabase=kwargs['mydatabase'],myusername=kwargs['myusername'])
+    print("_"*50)
+    print(cmds)
+    subprocess.call(cmds, shell=True)
+    print("_"*50)
+    print('The raster has been loaded into PostSQL...')
+    
+    
+
 if __name__=="__main__":
     #a-create or connect to the database
-    # db_file=r'./database/workshop_LAUP_iit.db'
+    db_file=r'./database/workshop_LAUP_iit.db'
     # sql_w=SQLite_handle(db_file)
     # sql_w.create_connection()    
     
@@ -392,7 +455,7 @@ if __name__=="__main__":
     # bike_sharing.plot()
     
     #h-12_sentinel-2-NDVI
-    # ndvi_fn=r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\NDVI.tif'
+    ndvi_fn=r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\NDVI.tif'
     # sentinel_2_NDVI=sentinel_2_NDVI(data_dic['sentinel_2'],ndvi_fn)
     #i-12-01_raster crop
     # ndvi_cropped=raster_crop(raster_fn=ndvi_fn,crop_shp_fn='./data/GIS/b_centroid_buffer.shp',boundary=boudnary_polygon) #,cropped_fn='./data/GIS/NDVI_cropped.tif'
@@ -401,9 +464,15 @@ if __name__=="__main__":
     
     
     
+    #I-write GeoDataFrame into SQLite database
+    # gpd2SQLite(population,db_file,table_name='population')
+        
+    #G-write GeoDataFrame into PostgreSQL 
+    # gpd2postSQL(population,table_name='population',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    #G-read GeoDataFrame from PostgreSQL
+    # population_postsql=postSQL2gpd(table_name='population',geom_col='geometry',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    # population_postsql.plot(column='Population',cmap='hot')
     
-    
-    
-    
-    
-    
+    #H-load raster into postGreSQL
+    raster2postSQL(ndvi_fn,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+        
