@@ -72,7 +72,10 @@ def boundary_buffer_centroidCircle(kml_extent,proj_epsg,bounadry_type='buffer_ci
         b_centroid=boundary_proj.centroid
         b_centroid_buffer=b_centroid.buffer(buffer_distance)
         c_area=[b_centroid_buffer.area]
-        gpd.GeoDataFrame({'area': c_area,'geometry':b_centroid_buffer},crs=utm).to_crs(wgs84).to_file('./data/GIS/b_centroid_buffer.shp')        
+        gpd.GeoDataFrame({'area': c_area,'geometry':b_centroid_buffer},crs=utm).to_crs(wgs84).to_file('./data/GIS/b_centroid_buffer.shp')     
+        
+        b_centroid_gpd=gpd.GeoDataFrame({'x':[b_centroid.x],'y':[b_centroid.y],'geometry':[b_centroid]},crs=utm)# .to_crs(wgs84)
+        gpd2postSQL(b_centroid_gpd,table_name='b_centroid',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
         return b_centroid_buffer
     
     elif bounadry_type=='buffer_offset':
@@ -420,9 +423,9 @@ if __name__=="__main__":
     # gpd2postSQL(buildingFootprint,table_name='building_footprint',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     # d-03_bus routes
-    bus_routes=shp2gdf(data_dic['bus_routes'],epsg=nanjing_epsg,boundary=None,encoding='GBK')
-    bus_routes.plot()
-    gpd2postSQL(bus_routes,table_name='bus_routes',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
+    # bus_routes=shp2gdf(data_dic['bus_routes'],epsg=nanjing_epsg,boundary=None,encoding='GBK')
+    # bus_routes.plot()
+    # gpd2postSQL(bus_routes,table_name='bus_routes',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
     
     #d-04_bus station
     # bus_stations=shp2gdf(data_dic['bus_stations'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
