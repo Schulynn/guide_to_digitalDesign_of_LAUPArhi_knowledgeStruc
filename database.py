@@ -454,7 +454,7 @@ if __name__=="__main__":
     # g_df_dict[taxi_keys[0]].plot(column=taxi_keys[0],cmap='hot')
     
     # for key in taxi_keys:
-    #    gpd2postSQL(g_df_dict[key],table_name='taxi_{}'.format(key),myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT') 
+    #     gpd2postSQL(g_df_dict[key],table_name='taxi_{}'.format(key),myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT') 
 
     #e-B-09_POI
     # POI=csv2gdf_A_POI(data_dic['POI'],epsg=nanjing_epsg,boundary=boudnary_polygon,encoding='GBK')
