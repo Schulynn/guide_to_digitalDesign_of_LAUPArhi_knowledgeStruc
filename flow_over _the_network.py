@@ -5,6 +5,7 @@ Created on Sun Mar 14 10:47:36 2021
 @author: richie bao -workshop-LA-UP_IIT
 """
 import network_structure_bus_subway as nsbs
+import database as db
 import networkx as nx
 import os,sys
 import matplotlib.pyplot as plt
@@ -114,3 +115,4 @@ if __name__=="__main__":
         
     starting_stops_population_weights_gdf=starting_stops_population_weights(nearest_population_weight,stop_geometries,nanjing_epsg)
     starting_stops_population_weights_gdf.plot(column='mean',cmap='afmhot',markersize=8)
+    db.gpd2postSQL(starting_stops_population_weights_gdf,table_name='starting_stops_pop_weights',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')

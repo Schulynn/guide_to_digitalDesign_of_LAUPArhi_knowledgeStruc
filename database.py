@@ -26,6 +26,7 @@ data_dic={
     'microblog':r'./data/GIS/Najing Metro Weibo publish.db',
     'bike_sharing':r'./data/GIS/One hundred thousand shared bikes.xls',
     'sentinel_2':r'C:\Users\richi\omen_richiebao\omen_IIIT\workshop_LA_UP_iit\data\RS\S2B_MSIL2A_20200819T024549_N0214_R132_T50SPA_20200819T045147.SAFE',
+    'comprehensive_park':r'./data/GIS/NanjingParks.kml',
     }
 
 class SQLite_handle():
@@ -89,11 +90,14 @@ def boundary_buffer_centroidCircle(kml_extent,proj_epsg,bounadry_type='buffer_ci
 def kml2gdf(fn,epsg=None,boundary=None): 
     import pandas as pd
     import geopandas as gpd
+    import fiona,io
     
     # Enable fiona driver
     gpd.io.file.fiona.drvsupport.supported_drivers['KML'] = 'rw'
     kml_gdf=gpd.GeoDataFrame()
     for layer in tqdm(fiona.listlayers(fn)):
+        # print("_"*50)
+        # print(layer)
         src=fiona.open(fn, layer=layer)
         meta = src.meta
         meta['driver'] = 'KML'        
@@ -118,8 +122,49 @@ def kml2gdf(fn,epsg=None,boundary=None):
         kml_gdf_proj.query('mask',inplace=True)        
 
     return kml_gdf_proj
+
+def kml2gdf_folder(fn,epsg=None,boundary=None): 
+    import pandas as pd
+    import geopandas as gpd
+    import fiona,io
+
+    # Enable fiona driver
+    gpd.io.file.fiona.drvsupport.supported_drivers['KML'] = 'rw'
+    kml_gdf=gpd.GeoDataFrame()
+    for layer in tqdm(fiona.listlayers(fn)):
+        # print("_"*50)
+        # print(layer)
+        src=fiona.open(fn, layer=layer)
+        meta = src.meta
+        meta['driver'] = 'KML'        
+        with io.BytesIO() as buffer:
+            with fiona.open(buffer, 'w', **meta) as dst:            
+                for i, feature in enumerate(src):
+                    # print(feature)
+                    # print("_"*50)
+                    # print(feature['geometry']['coordinates'])
+                    if len(feature['geometry']['coordinates'][0]) > 1:
+                        # print(feature['geometry']['coordinates'])
+                        
+                        dst.write(feature)
+                        # break
+            buffer.seek(0)
+            one_layer=gpd.read_file(buffer,driver='KML')
+            # print(one_layer)
+            one_layer['group']=layer
+            kml_gdf=kml_gdf.append(one_layer,ignore_index=True)
+
+    if epsg is not None:
+        kml_gdf_proj=kml_gdf.to_crs(epsg=epsg)
+
+    if boundary:
+        kml_gdf_proj['mask']=kml_gdf_proj.geometry.apply(lambda row:row.within(boundary))
+        kml_gdf_proj.query('mask',inplace=True)        
+
+    return kml_gdf_proj
     
-def  shp2gdf(fn,epsg=None,boundary=None,encoding='utf-8'):
+    
+def shp2gdf(fn,epsg=None,boundary=None,encoding='utf-8'):
     import geopandas as gpd
     
     shp_gdf=gpd.read_file(fn,encoding=encoding)
@@ -409,8 +454,8 @@ if __name__=="__main__":
     
     #b-create boundary
     #method_a
-    kml_extent=data_dic['qingliangMountain_boundary']
-    boudnary_polygon=boundary_buffer_centroidCircle(kml_extent,nanjing_epsg,bounadry_type='buffer_circle',buffer_distance=5000) #'buffer_circle';'buffer_offset'
+    # kml_extent=data_dic['qingliangMountain_boundary']
+    # boudnary_polygon=boundary_buffer_centroidCircle(kml_extent,nanjing_epsg,bounadry_type='buffer_circle',buffer_distance=5000) #'buffer_circle';'buffer_offset'
         
     #c-road_network_kml
     # road_gdf=kml2gdf(data_dic['road_network'],epsg=nanjing_epsg,boundary=boudnary_polygon)
@@ -506,3 +551,6 @@ if __name__=="__main__":
     #H-load raster into postGreSQL
     # raster2postSQL(ndvi_fn,table_name='ndvi',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
         
+    #comprehensive park
+    comprehensive_park=kml2gdf_folder(data_dic['comprehensive_park'],epsg=nanjing_epsg,boundary=None) 
+    gpd2postSQL(comprehensive_park,table_name='comprehensive_park',myusername='postgres',mypassword='123456',mydatabase='workshop-LA-UP_IIT')
